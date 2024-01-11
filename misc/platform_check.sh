@@ -25,6 +25,7 @@
 		pack='Linux'
 	elif [[ "$platform" = 'MSYS'* ]] || [[ "$platform" = 'MINGW'* ]]; then
 		pack='Windows'
+		platform='Windows'
 	elif [ "$platform" = 'Darwin' ]; then
 		pack='Darwin'
 	fi
@@ -72,7 +73,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$irecovery" = '' ]; then irecovery='./tools/Linux/irecovery'; fi
 		if [ "$gaster" = '' ]; then gaster='./tools/Linux/gaster'; fi
 			
-	elif [[ "$platform" = 'MSYS'* ]] || [[ "$platform" = 'MINGW64'* ]]; then
+	elif [ "$platform" = 'Windows' ] && [ "$arch" = 'x86_64' ]; then
 
 	# Windows x64
 	
@@ -94,7 +95,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$irecovery" = '' ]; then irecovery='./tools/Windows/libimobiledevice_x64/irecovery'; fi
 		if [ "$gaster" = '' ]; then gaster='./tools/Windows/gaster/gaster_x64_0x7ff'; fi
 		
-	elif [[ "$platform" = 'MSYS'* ]] || [[ "$platform" = 'MINGW32'* ]]; then
+	elif [ "$platform" = 'Windows' ] && [ "$arch" = 'i686' ]; then
 
 	# Windows x86/x32
 	
