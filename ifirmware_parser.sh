@@ -243,6 +243,16 @@ func_download_ramdisk (){
 		echo '[!] Downloading into:' "$download_output"'/'"$ramdisk_file"
 		"$pzb" -g "$ramdisk_file" "$ipsw_url_json" -o "$download_output"'/'"$ramdisk_file"
 	fi
+	if [ "$platform" = 'Darwin' ]; then
+		# pzb output switch is currently broken in MacOS, this is a quick solution !
+		echo '[!] PZB in Darwin cannot write output to another directory'
+		echo '[-] Moving downloaded files into:' "$download_output"
+		mv -f *.plist "$download_output"
+		mv -f *.im4p "$download_output"
+		mv -f kernelcache* "$download_output"
+		mv -f *.trustcache "$download_output"
+		mv -f *.dmg "$download_output"
+	fi
 	
 		
 		echo '[!] Checking downloaded files...'

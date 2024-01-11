@@ -60,6 +60,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$plistutil" = '' ]; then plistutil=''; fi
 		
 		# SSHRD tools
+		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Linux/iBoot64Patcher'; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Linux/kairos'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Linux/kerneldiff'; fi
 		if [ "$img4" = '' ]; then img4='./tools/Linux/img4'; fi
@@ -81,6 +82,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$plistutil" = '' ]; then plistutil='./tools/Windows/libimobiledevice_x64/plistutil'; fi
 		
 		# SSHRD tools for Windows x64
+		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Windows/posix/iBoot64Patcher'; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Windows/kairos_x64'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Windows/kerneldiff_x64'; fi
 		if [ "$img4" = '' ]; then img4='./tools/Windows/posix/img4'; fi
@@ -101,7 +103,8 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$pzb" = '' ]; then pzb=echo "WARNING: PZB UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
 		if [ "$plistutil" = '' ]; then plistutil='./tools/Windows/libimobiledevice_x86/plistutil'; fi
 		
-		# SSHRD tools for Windows x64
+		# SSHRD tools for Windows x86
+		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher=echo "WARNING: IBOOT64PATCHER UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Windows/kairos_x86'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Windows/kerneldiff_x86'; fi
 		if [ "$img4" = '' ]; then img4=echo "WARNING: IMG4 UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
@@ -123,6 +126,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$plistutil" = '' ]; then plistutil=''; fi
 		
 		# SSHRD tools
+		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Darwin/iBoot64Patcher'; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Darwin/kairos'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Darwin/kerneldiff'; fi
 		if [ "$img4" = '' ]; then img4='./tools/Darwin/img4'; fi
