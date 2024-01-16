@@ -87,7 +87,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$kairos" = '' ]; then kairos='./tools/Windows/kairos_x64'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Windows/kerneldiff_x64'; fi
 		if [ "$img4" = '' ]; then img4='./tools/Windows/posix/img4'; fi
-		if [ "$img4tool" = '' ]; then img4tool='./tools/Windows/img4tool_x64/img4tool'; fi
+		if [ "$img4tool" = '' ]; then img4tool='./tools/Windows/posix/img4tool'; fi
 		if [ "$hfsplus" = '' ]; then hfsplus='./tools/Windows/hfsplus_x86'; fi
 		if [ "$KPlooshFinder" = '' ]; then KPlooshFinder='./tools/Windows/KPlooshFinder_x64'; fi
 		
@@ -109,7 +109,7 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$kairos" = '' ]; then kairos='./tools/Windows/kairos_x86'; fi
 		if [ "$kerneldiff" = '' ]; then kerneldiff='./tools/Windows/kerneldiff_x86'; fi
 		if [ "$img4" = '' ]; then img4=echo "WARNING: IMG4 UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
-		if [ "$img4tool" = '' ]; then img4tool='./tools/Windows/img4tool_x86/img4tool'; fi
+		if [ "$img4tool" = '' ]; then img4tool=echo "WARNING: IMG4TOOL UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
 		if [ "$hfsplus" = '' ]; then hfsplus='./tools/Windows/hfsplus_x86'; fi
 		if [ "$KPlooshFinder" = '' ]; then KPlooshFinder='./tools/Windows/KPlooshFinder_x86'; fi
 		
