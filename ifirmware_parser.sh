@@ -28,6 +28,9 @@
 	file_json=
 	ramdisk_download=
 	keys_download=
+	multi_model=
+	model_ver1=
+	model_ver2=
 	
 	# User input
 	search_product=
@@ -71,24 +74,48 @@ func_firmwarekeys_parser (){
 
 		
 		echo '[!] Checking the firmware_keys:' "$file_json"
+	if [ "$multi_model" = 'YES' ] && [ "$search_model" = "$model_ver2" ]; then
+		firmkeys_header=$($jq -c 'to_entries[] | select(.key | endswith("devicetree2")) | .key' $file_json)
+		firmkeys_header2=$($jq -c 'to_entries[] | select(.key | endswith("devicetree2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
+	else
 		firmkeys_header=$($jq -c 'to_entries[] | select(.key | endswith("devicetree")) | .key' $file_json)
 		firmkeys_header2=$($jq -c 'to_entries[] | select(.key | endswith("devicetree")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
-
+	fi
+	
 if [ "$firmkeys_header" != '' ] && [ "$firmkeys_header" != 'null' ]; then
 		product_json=$(echo $firmkeys_header | sed 's/.*(\([^_]*\)).*/\1/')
 		model_json=$(echo $firmkeys_header2 | sed 's/.*\.\(.*\)\..*/\1/')
 		build_json=$(echo $firmkeys_header | sed 's/.*_\([^_]*\)_.*/\1/')
 
 	# If firmware_keys already exist then use it
-	if [ -s 'misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json' ]; then
+	if [ -s 'misc/firmware_keys/'"$product_json"_"$ios_json"_"$build_json"'.json' ]; then
 		echo '[!] Using the firmware_keys:' "$file_json"
-		file_json='misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json'
-	elif [ ! -s 'misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json' ]; then
+		file_json='misc/firmware_keys/'"$product_json"_"$ios_json"_"$build_json"'.json'
+	elif [ ! -s 'misc/firmware_keys/'"$product_json"_"$ios_json"_"$build_json"'.json' ]; then
 		echo '[-] Copying firmware_keys into folder'
 		mkdir -p 'misc/firmware_keys'
-		cp "$file_json" 'misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json'
+		cp "$file_json" 'misc/firmware_keys/'"$product_json"_"$ios_json"_"$build_json"'.json'
 	fi
 	
+	if [ "$multi_model" = 'YES' ] && [ "$search_model" = "$model_ver2" ]; then
+		echo '[-] Parsing... filenames'
+		ibec_file=$($jq -c 'to_entries[] | select(.key | endswith("ibec2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
+		ibss_file=$($jq -c 'to_entries[] | select(.key | endswith("ibss2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
+		iboot_file=$($jq -c 'to_entries[] | select(.key | endswith("iboot2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
+		kernel_file=$($jq -c 'to_entries[] | select(.key | endswith("kernelcache2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'K' 'k')
+		devicetree_file=$($jq -c 'to_entries[] | select(.key | endswith("devicetree2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		ramdisk_file=$($jq -c 'to_entries[] | select(.key | endswith("updateramdisk2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		trustcache_file="$ramdisk_file"'.trustcache'
+
+		echo '[-] Parsing... decryption_keys'
+		ibec_iv=$($jq -c 'to_entries[] | select(.key | endswith("ibec2")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		ibec_key=$ibec_iv$($jq -c 'to_entries[] | select(.key | endswith("ibec2")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		ibss_iv=$($jq -c 'to_entries[] | select(.key | endswith("ibss2")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
+		ibss_key=$ibss_iv$($jq -c 'to_entries[] | select(.key | endswith("ibss2")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		iboot_iv=$($jq -c 'to_entries[] | select(.key | endswith("iboot2")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
+		iboot_key=$iboot_iv$($jq -c 'to_entries[] | select(.key | endswith("iboot2")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+	
+	else
 		echo '[-] Parsing... filenames'
 		ibec_file=$($jq -c 'to_entries[] | select(.key | endswith("ibec")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
 		ibss_file=$($jq -c 'to_entries[] | select(.key | endswith("ibss")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
@@ -104,7 +131,9 @@ if [ "$firmkeys_header" != '' ] && [ "$firmkeys_header" != 'null' ]; then
 		ibss_iv=$($jq -c 'to_entries[] | select(.key | endswith("ibss")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
 		ibss_key=$ibss_iv$($jq -c 'to_entries[] | select(.key | endswith("ibss")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
 		iboot_iv=$($jq -c 'to_entries[] | select(.key | endswith("iboot")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g;')
-		iboot_key=$iboot_iv$($jq -c 'to_entries[] | select(.key | endswith("iboot")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		iboot_key=$iboot_iv$($jq -c 'to_entries[] | select(.key | endswith("iboot")) | .value.key' $file_json | sed 's/"//g; s/\[//g; s/\]//g')	
+	fi
+	
 	
 elif [ -s 'misc/firmware_keys/__.json' ]; then
 		echo '[Error] Found wrong stored file!'
@@ -124,22 +153,22 @@ fi
 		echo '[Debug] Printing variables...'
 		echo '--------------------------------------------------'
 		echo '- Device info:'
-		echo 'ProductName ($product_json): '$product_json
-		echo 'Model ($model_json): '$model_json
-		echo 'Build ($build_json): '$build_json
+		echo 'ProductName ($product_json):' "$product_json"
+		echo 'Model ($model_json):' "$model_json"
+		echo 'Build ($build_json):' "$build_json"
 		echo '--------------------------------------------------'
 		echo '- Ramdisk Files:'
-		echo 'iBEC Filename ($ibec_file): '$ibec_file
-		echo 'iBSS Filename ($ibss_file): '$ibss_file 
-		echo 'iBoot Filename ($iboot_file): '$iboot_file 
-		echo 'Kernel Filename ($kernel_file): '$kernel_file
-		echo 'Devicetree Filename ($devicetree_file): '$devicetree_file
-		echo 'Ramdisk Filename ($ramdisk_file): '$ramdisk_file
+		echo 'iBEC Filename ($ibec_file):' "$ibec_file"
+		echo 'iBSS Filename ($ibss_file):' "$ibss_file"
+		echo 'iBoot Filename ($iboot_file):' "$iboot_file"
+		echo 'Kernel Filename ($kernel_file):' "$kernel_file"
+		echo 'Devicetree Filename ($devicetree_file):' "$devicetree_file"
+		echo 'Ramdisk Filename ($ramdisk_file):' "$ramdisk_file"
 		echo '--------------------------------------------------'
 		echo '- Decryption keys:'
-		echo 'iBEC ($ibec_key):'$ibec_key
-		echo 'iBSS ($ibss_key):'$ibss_key
-		echo 'iBoot ($iboot_key):'$iboot_key
+		echo 'iBEC ($ibec_key):' "$ibec_key"
+		echo 'iBSS ($ibss_key):' "$ibss_key"
+		echo 'iBoot ($iboot_key):' "$iboot_key"
 		echo '--------------------------------------------------'
 		echo
 		echo "Note: To use these variables please call 'ifirmware_parser.sh' as source from any script."
@@ -156,11 +185,19 @@ func_firmware_parser (){
 		ios_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .version' $file_json | sed -n 1p | sed 's/"//g')
 		build_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .buildid' $file_json | sed -n 1p | sed 's/"//g')
 
-	if [ "$ios_json" != '' ] && [ "$ios_json" != 'null' ] && [ "$build_json" != '' ] && [ "$build_json" != 'null' ]; then
+		if [ "$ios_json" != '' ] && [ "$ios_json" != 'null' ] && [ "$build_json" != '' ] && [ "$build_json" != 'null' ]; then
 		cpid_json=$($jq '.devices."'$search_product'".cpid' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
 		cpid_json='0x'$(printf '%x' $cpid_json) # convert cpid from demical to hex
-		
 		model_json=$($jq '.devices."'$search_product'".BoardConfig' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
+	if [ "$search_product" = 'iPhone8,1' ] || [ "$search_product" = 'iPhone8,2' ] || [ "$search_product" = 'iPad6,11' ] || [ "$search_product" = 'iPad6,12' ]; then
+		# Apple's firmwares.json only stores on model per product name
+		# The actul model name will be parsed from BuildManifest.plist found in iPSW file
+		# I could't implement way better than @meowcat454 method, i admit it
+		# The case is these four product names has different model versions
+		# and the buildmanifest could contain 4, 8 or 12 models version
+		multi_model='YES'
+	fi
+		
 		ipsw_filename_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .filename' $file_json | sed -n 1p | sed 's/"//g')
 		ipsw_url_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .url' $file_json | sed -n 1p | sed 's/"//g')
 		
@@ -198,16 +235,6 @@ func_firmware_parser (){
 func_download_ramdisk (){
 
 		echo '[!] Start downloading the ramdisk files...'
-		
-	if [ ! -s "$download_output"'/BuildManifest.plist' ]; then
-		echo '[!] Downloading into:' "$download_output"'/BuildManifest.plist'
-		"$pzb" -g 'BuildManifest.plist' "$ipsw_url_json" -o "$download_output"'/BuildManifest.plist'
-	fi
-	
-	if [ ! -s "$download_output"'/Restore.plist' ]; then
-		echo '[!] Downloading into:' "$download_output"'/Restore.plist'
-		"$pzb" -g 'Restore.plist' "$ipsw_url_json" -o "$download_output"'/Restore.plist'
-	fi
 	
 	if [ ! -s "$download_output"'/'"$ibec_file" ]; then
 		echo '[!] Downloading into:' "$download_output"'/'"$ibec_file"
@@ -244,7 +271,7 @@ func_download_ramdisk (){
 		"$pzb" -g "$ramdisk_file" "$ipsw_url_json" -o "$download_output"'/'"$ramdisk_file"
 	fi
 	if [ "$platform" = 'Darwin' ]; then
-		# pzb output switch is currently broken in MacOS, this is a quick solution !
+		# [bug] pzb output switch is currently broken in MacOS, this is a quick solution !
 		echo '[!] PZB in Darwin cannot write output to another directory'
 		echo '[-] Moving downloaded files into:' "$download_output"
 		mv -f *.plist "$download_output"
@@ -256,8 +283,6 @@ func_download_ramdisk (){
 	
 		
 		echo '[!] Checking downloaded files...'
-		if [ ! -s "$download_output"'/BuildManifest.plist' ]; then echo 'Error missing:' "$download_output"'/BuildManifest.plist'; exit; fi
-		if [ ! -s "$download_output"'/Restore.plist' ]; then echo '[!] Error missing:' "$download_output"'/Restore.plist'; exit; fi
 		if [ ! -s "$download_output"'/'"$ibec_file" ]; then echo '[!] Error missing:' "$download_output"'/'"$ibec_file"; exit; fi
 		if [ ! -s "$download_output"'/'"$ibss_file" ]; then echo '[!] Error missing:' "$download_output"'/'"$ibss_file"; exit; fi
 		if [ ! -s "$download_output"'/'"$iboot_file" ]; then echo '[!] Warnning missing:' "$download_output"'/'"$iboot_file"; fi # not necessary for randisk boot
@@ -274,26 +299,67 @@ func_download_ramdisk (){
 # Function 4 (Download firmware keys from https://theapplewiki.com)
 func_download_keys (){
 
-	file_json='misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json'
+		if [ ! -d './misc/build_manifest' ]; then mkdir -p './misc/build_manifest'; fi
+		build_manifest='./misc/build_manifest/'"$product_json"_"$ios_json"_"$build_json"'.plist'
+	if [ ! -s "$build_manifest" ]; then
+		echo '[!] Downloading: BuildManifest.plist ...'
+		"$pzb" -g 'BuildManifest.plist' "$ipsw_url_json" -o "$build_manifest"
+	fi
+	if [ "$platform" = 'Darwin' ] && [ -s "$build_manifest" ]; then
+		# [bug] pzb output switch in macos are broken !
+		echo '[!] PZB in Darwin cannot write output to another directory'
+		echo '[-] Moving into:' "$build_manifest"
+		mv -f './BuildManifest.plist' '/misc/build_manifest/'
+	fi
+	
+	# check again if build manifest is downloaded
+	if [ ! -s "$build_manifest" ]; then
+		echo '[!] Downloading has failed !'
+		exit 1
+	fi
+
+if [ "$multi_model" = 'YES' ] && [ -s "$build_manifest" ]; then
+		echo '[-] Found BuildManifest:' "$build_manifest"
+		echo '[-] Checking model versions ...'
+		models_ver=$(grep '<string>'"${model_json:0:2}" "$build_manifest" | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
+		model_ver1=$(echo "$models_ver" | sed -n 1p)
+		model_ver2=$(echo "$models_ver" | sed -n 2p)
+	if [ "$search_model" != '' ]; then
+	if [ "$search_model" = "$model_ver1" ] || [ "$search_model" = "$model_ver2" ]; then
+		model_json="$search_model"
+	elif [ "$search_model" != "$model_ver1" ] || [ "$search_model" != "$model_ver2" ]; then
+		echo '[!] Error the model you selected:' "'$search_model'" 'does not matches' "'$model_ver1'" 'or' "'$model_ver2'"
+		echo '[-] Available models for' "$product_json": "'$model_ver1'" "'$model_ver2'"
+		#echo '[-] Possible model versions (ignore duplicated):' "$models_ver" | tr '\n' ' '
+		exit 1
+	fi
+	elif [ "$search_model" = '' ]; then
+		echo '[!] Please select your exact device model using -m switch'
+		echo '[-] e.g: ./sshrd_lite.sh' -p "$product_json" -m "$model_ver1" -s "$ios_json"
+		echo '[-] Available models for' "'$product_json'": "'$model_ver1'" "'$model_ver2'"
+		exit 1
+	else
+		echo '[!] Error could not detect model version'
+		exit 1
+	fi
+fi
+
+	file_json='misc/firmware_keys/'"$product_json"_"$ios_json"_"$build_json"'.json'
 	if [ ! -d 'misc/firmware_keys' ]; then mkdir -p 'misc/firmware_keys'; fi
 		
-if [ -s 'misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json' ]; then
+if [ -s "$file_json" ]; then
 		func_firmwarekeys_parser # call function
 		return
 		
-elif [ ! -s 'misc/firmware_keys/'"$product_json"_"$model_json"_"$build_json"'.json' ]; then
-		
+elif [ ! -s "$file_json" ]; then
 		echo '[!] Decryption keys not found !'
 		
 if [ "$plistutil" != '' ]; then
 		# MacOS and Linux currently does not have plistutil
-		# In case you are wondering downloading 'BuildManifest.plist' are usually smaller size than downloading the whole website
-		echo '[!] Downloading BuildManifest.plist ...'
-		"$pzb" -g 'BuildManifest.plist' "$ipsw_url_json" -o 'misc/firmware_keys/BuildManifest.plist'
-		if [ ! -s 'misc/firmware_keys/BuildManifest.plist' ]; then echo '[!] Error could not download the BuildManifest.plist'; exit 1; fi
+		# In case you are wondering why to use plistutil? bcz downloading 'BuildManifest.plist' are usually smaller size than downloading the whole website
 		
 		echo '[-] Parsing firmware codename...'
-		firm_codename=$($plistutil -p 'misc/firmware_keys/BuildManifest.plist' | grep 'BuildTrain' -m 1 | awk -F '",' '{print $1}' | awk -F ': "' '{print $2}')
+		firm_codename=$($plistutil -p "$build_manifest" | grep 'BuildTrain' -m 1 | awk -F '",' '{print $1}' | awk -F ': "' '{print $2}')
 		tmp_url='https://theapplewiki.com/index.php?title=Keys:'"$firm_codename"_"$build_json"_'('"$product_json"')'
 else
 		echo '[!] Fetching firmware keys url...'
@@ -374,6 +440,7 @@ fi
 		echo 'Switches:'
 		echo '-u/--update     Update firmwares.json database'
 		echo '-p/--product    Select Product name (Example: -p iPhone9,3 or -p iphone9,3)'
+		echo '-m/--model      Select model version (Example: -m n66ap or -m n66map)'
 		echo '-s/--ios        Search by iOS Version (Example: -s 15 or --ios 15.8)'
 		echo '-b/--build      Search by Build number (Example: -b 19H or --build 19H370)'
 		echo '-o/--output     Where to store downloaded ramdisk files.'
@@ -401,6 +468,7 @@ fi
         *".json") file_json="$1"; shift;;
         -o|--output) download_output="$2"; shift;;
         -p|--product) search_product=$(echo $2 | tr 'p' 'P'); shift;;
+        -m|--model) search_model=$(echo $2 | tr '[:upper:]' '[:lower:]'); shift;;
         -s|--ios) search_version="$2"; value_json='version'; shift;;
         -b|--build) search_version="$2"; value_json='buildid'; shift;;
 		#-k|-keys) keys_download="YES"; shift;;
