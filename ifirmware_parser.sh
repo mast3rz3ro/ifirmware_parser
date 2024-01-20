@@ -189,7 +189,7 @@ func_firmware_parser (){
 		cpid_json=$($jq '.devices."'$search_product'".cpid' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
 		cpid_json='0x'$(printf '%x' $cpid_json) # convert cpid from demical to hex
 		model_json=$($jq '.devices."'$search_product'".BoardConfig' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
-	if [ "$search_product" = 'iPhone8,1' ] || [ "$search_product" = 'iPhone8,2' ] || [ "$search_product" = 'iPad6,11' ] || [ "$search_product" = 'iPad6,12' ]; then
+	if [ "$search_product" = 'iPhone8,1' ] || [ "$search_product" = 'iPhone8,2' ] || [ "$search_product" = 'iPhone8,4' ] || [ "$search_product" = 'iPad6,11' ] || [ "$search_product" = 'iPad6,12' ]; then
 		# Apple's firmwares.json only stores on model per product name
 		# The actul model name will be parsed from BuildManifest.plist found in iPSW file
 		# I could't implement way better than @meowcat454 method, i admit it
