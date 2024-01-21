@@ -102,9 +102,9 @@ if [ "$firmkeys_header" != '' ] && [ "$firmkeys_header" != 'null' ]; then
 		ibec_file=$($jq -c 'to_entries[] | select(.key | endswith("ibec2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
 		ibss_file=$($jq -c 'to_entries[] | select(.key | endswith("ibss2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
 		iboot_file=$($jq -c 'to_entries[] | select(.key | endswith("iboot2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
-		kernel_file=$($jq -c 'to_entries[] | select(.key | endswith("kernelcache2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'K' 'k')
+		kernel_file=$($jq -c 'to_entries[] | select(.key | endswith("kernelcache")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'K' 'k')
 		devicetree_file=$($jq -c 'to_entries[] | select(.key | endswith("devicetree2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
-		ramdisk_file=$($jq -c 'to_entries[] | select(.key | endswith("updateramdisk2")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
+		ramdisk_file=$($jq -c 'to_entries[] | select(.key | endswith("updateramdisk")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
 		trustcache_file="$ramdisk_file"'.trustcache'
 
 		echo '[-] Parsing... decryption_keys'
@@ -185,7 +185,7 @@ func_firmware_parser (){
 		ios_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .version' $file_json | sed -n 1p | sed 's/"//g')
 		build_json=$($jq '.devices."'$search_product'".firmwares[] | select(."'$value_json'" | startswith("'$search_version'")) | .buildid' $file_json | sed -n 1p | sed 's/"//g')
 
-		if [ "$ios_json" != '' ] && [ "$ios_json" != 'null' ] && [ "$build_json" != '' ] && [ "$build_json" != 'null' ]; then
+if [ "$ios_json" != '' ] && [ "$ios_json" != 'null' ] && [ "$build_json" != '' ] && [ "$build_json" != 'null' ]; then
 		cpid_json=$($jq '.devices."'$search_product'".cpid' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
 		cpid_json='0x'$(printf '%x' $cpid_json) # convert cpid from demical to hex
 		model_json=$($jq '.devices."'$search_product'".BoardConfig' $file_json | sed 's/"//g' | tr [:upper:] [:lower:])
@@ -205,7 +205,7 @@ func_firmware_parser (){
 		major_ios=${ios_json:0:2}
 		minor_ios=${ios_json:3:1}
 		
-	else
+else
 		echo "[Error] Couldn't find any result"
 		echo '[Hint] Please make sure to enter a valid product name and version'
 	exit
@@ -335,7 +335,6 @@ if [ "$multi_model" = 'YES' ] && [ -s "$build_manifest" ]; then
 	fi
 	elif [ "$search_model" = '' ]; then
 		echo '[!] Please select your exact device model using -m switch'
-		echo '[-] e.g: ./sshrd_lite.sh' -p "$product_json" -m "$model_ver1" -s "$ios_json"
 		echo '[-] Available models for' "'$product_json'": "'$model_ver1'" "'$model_ver2'"
 		exit 1
 	else
