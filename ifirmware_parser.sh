@@ -457,22 +457,22 @@ debug_info (){
 
 
 		########## Switch loop ##########
-while getopts p:m:s:b:i:o:krdu option 
-do 
- case "${option}"
- in
- p) search_product=$(echo ${OPTARG} | tr 'p' 'P');; 
- m) search_model=$(echo ${OPTARG} | tr '[:upper:]' '[:lower:]');; 
- s) search_version="${OPTARG}"; value_json='version';;
- b) search_version="${OPTARG}"; value_json='buildid';;
- i) file_json="${OPTARG}";;
- o) download_output="${OPTARG}";;
- # Options
- k) keys_download="yes";;
- r) ramdisk_download="yes";;
- d) debug_mode="yes";;
- u) update_mode="yes";;
- esac 
+while getopts p:m:s:b:i:o:krdu option >/dev/null 2>&1
+	do
+		case "${option}"
+	in
+		p) search_product=$(echo ${OPTARG} | tr 'p' 'P');; 
+		m) search_model=$(echo ${OPTARG} | tr '[:upper:]' '[:lower:]');; 
+		s) search_version="${OPTARG}"; value_json='version';;
+		b) search_version="${OPTARG}"; value_json='buildid';;
+		i) file_json="${OPTARG}";;
+		o) download_output="${OPTARG}";;
+		# Options
+		k) keys_download="yes";;
+		r) ramdisk_download="yes";;
+		d) debug_mode="yes";;
+		u) update_mode="yes";;
+	esac 
 done
 
 

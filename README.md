@@ -1,6 +1,6 @@
 # iFirmware Parser
 
-*Parse firmware keys, and download SSH RAMDISK files.
+* Parse firmware keys, and download SSH RAMDISK files.
 
 
 ## Features
@@ -12,7 +12,7 @@
 
 ## Requirements
 
-* Bash environment, libplist, partialZipBrowser, jq, curl
+* Bash environment, libplist, partialZipBrowser, jq and curl
 
 ## How to get started?
 
