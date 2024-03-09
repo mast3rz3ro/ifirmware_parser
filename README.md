@@ -1,29 +1,20 @@
-<h1 align="center">iFirmware Parser</h1>
-<h2 align="center">Multi parser and RAMDISK downloader</h2>
-<p align="center">
-  <a href="https://github.com/mast3rz3ro/ifirmware_parser/graphs/contributors" target="_blank">
-    <img src="https://img.shields.io/github/contributors/mast3rz3ro/ifirmware_parser.svg" alt="Contributors">
-  </a>
-  <a href="https://github.com/mast3rz3ro/ifirmware_parser/commits/main" target="_blank">
-    <img src="https://img.shields.io/github/commit-activity/w/mast3rz3ro/ifirmware_parser.svg" alt="Commits">
-  </a>
-</p>
+# iFirmware Parser
 
----
+*Parse firmware keys, and download SSH RAMDISK files.
 
-# Features
 
-1. Parse info from apple's firmwares json file
-2. Parse firmware decryption keys from json file
-3. Download firmware decryption keys
-4. Download SSH RAMDISK files using pzb
-5. Cross platform
+## Features
 
-# Requirements
+1. Parse firmware decryption keys
+2. Prepare SSH RAMDISK files
+3. One time download
+4. Cross platform
 
-* Bash environment.
+## Requirements
 
-# How to use (All Platforms):
+* Bash environment, libplist, partialZipBrowser, jq, curl
+
+## How to get started?
 
 ```
 $ git clone 'https://github.com/mast3rz3ro/ifirmware_parser'
@@ -55,11 +46,12 @@ or even for searching the exact build
 $ source ./ifirmware_parser.sh -p iphone9,3 -b 19H370 -o 'somefolder' -r
 ```
 
-# Important Notes
+## Important Notes
 
-* Feel free to send a pull request.
+* The Apple's firmwares file does not provide any firmwares for release candidate (RC).
+* Currently Linux/MacOS users does not have a precompiled plistutil, thio this is not necessary.
 
-# Credits
+## Credits
 
 - [TheAppleWiki](https://theapplewiki.com) for providing decryption keys
 - [jq](https://jqlang.github.io/jq/download/) Used for parsing json files
