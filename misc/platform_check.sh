@@ -60,6 +60,10 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$pzb" = '' ]; then pzb='./tools/Linux/pzb'; fi
 		if [ "$plistutil" = '' ]; then plistutil=''; fi
 		
+		# SSH connection
+		if [ "$iproxy" = '' ]; then iproxy='./tools/Linux/iproxy'; fi
+		if [ "$sshpass" = '' ]; then sshpass='./tools/Linux/sshpass'; fi
+		
 		# SSHRD tools
 		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Linux/iBoot64Patcher'; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Linux/kairos'; fi
@@ -81,6 +85,10 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$jq" = '' ]; then jq='./tools/Windows/jq_x64'; fi
 		if [ "$pzb" = '' ]; then pzb='./tools/Windows/posix/pzb'; fi
 		if [ "$plistutil" = '' ]; then plistutil='./tools/Windows/libimobiledevice_x64/plistutil'; fi
+		
+		# SSH connection
+		if [ "$iproxy" = '' ]; then iproxy='./tools/Windows/libimobiledevice_x64/iproxy'; fi
+		if [ "$sshpass" = '' ]; then sshpass='./tools/Windows/posix/sshpass'; fi
 		
 		# SSHRD tools for Windows x64
 		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Windows/posix/iBoot64Patcher'; fi
@@ -104,6 +112,10 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$pzb" = '' ]; then pzb=echo "WARNING: PZB UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
 		if [ "$plistutil" = '' ]; then plistutil='./tools/Windows/libimobiledevice_x86/plistutil'; fi
 		
+		# SSH connection
+		if [ "$iproxy" = '' ]; then iproxy='./tools/Windows/libimobiledevice_x86/iproxy'; fi
+		if [ "$sshpass" = '' ]; then sshpass="WARNING: SSHPASS UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
+		
 		# SSHRD tools for Windows x86
 		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher=echo "WARNING: IBOOT64PATCHER UTILITY ISN'T AVAILABLE FOR WIN X86"; fi
 		if [ "$kairos" = '' ]; then kairos='./tools/Windows/kairos_x86'; fi
@@ -125,6 +137,10 @@ if [ "$platform" = 'Linux' ]; then
 		if [ "$jq" = '' ]; then jq='./tools/Darwin/jq'; fi
 		if [ "$pzb" = '' ]; then pzb='./tools/Darwin/pzb'; fi
 		if [ "$plistutil" = '' ]; then plistutil=''; fi
+		
+		# SSH connection
+		if [ "$iproxy" = '' ]; then iproxy='./tools/Darwin/iproxy'; fi
+		if [ "$sshpass" = '' ]; then sshpass='./tools/Darwin/sshpass'; fi
 		
 		# SSHRD tools
 		if [ "$iBoot64Patcher" = '' ]; then iBoot64Patcher='./tools/Darwin/iBoot64Patcher'; fi
