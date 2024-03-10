@@ -111,7 +111,18 @@ fi
 		ibec_file=$($jq -c 'to_entries[] | select(.key | endswith("ibec'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
 		ibss_file=$($jq -c 'to_entries[] | select(.key | endswith("ibss'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
 		iboot_file=$($jq -c 'to_entries[] | select(.key | endswith("iboot'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
+
+		# Parse kernelcache file
+		dummy_var=$(echo $files_list | tr ' ' '\n' | grep -c kernelcache) # check if there is more than one kernelcahce
+	if [ "$dummy_var" = '1' ]; then
 		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache)
+	elif [ "$dummy_var" = '2' ]; then
+		dummy_var=$(echo $product_name | tr ' ' '\n' | grep -o [1-9] | sed -n 1p) # get first digit from product name e.g iphone10,4 will return 1
+		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache*.*"$dummy_var")
+	else
+		echo '[e] Cannot parse the kernel filename !'
+		exit 1
+	fi
 		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | awk -F 'DeviceTree.' '{print $2}')
 		devicetree_file='DeviceTree.'"$devicetree_file" # Improve parsing with awk; todo #2
 		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
