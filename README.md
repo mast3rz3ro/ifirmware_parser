@@ -56,7 +56,7 @@ $ source ./ifirmware_parser.sh -p iphone9,3 -b 19H370 -o 'somefolder' -r
 - [TheAppleWiki](https://theapplewiki.com) for providing decryption keys
 - [jq](https://jqlang.github.io/jq/download/) Used for parsing json files
 - [curl](https://curl.se/windows/) Used for downloading firmware keys
-- [tihmstar](https://github.com/partialZipBrowser) for partialZipBrowser, a utility for downloading partial file from zip
+- [tihmstar](https://github.com/tihmstar/partialZipBrowser) for partialZipBrowser, a utility for downloading partial file from zip
 - [libimobiledevice](htts://github.com/libimobiledevice/libimobiledevice) for plistutil, a utility for parsing plist files
 - [sshrd_tools](https://github.com/mast3rz3ro/sshrd_tools) precompiled tools, this script uses only jq and pzb
 - Firmware decryption keys download function are inspired from @meowcat454 script's 64bit-SSH-Ramdisk

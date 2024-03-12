@@ -428,11 +428,10 @@ debug_info (){
 		#       Switches Stage       #
 		##############################
 
-	echo '[-] START:iFirmware-Parser'
+		echo '[-] START:iFirmware-Parser'
 	
 	if [ "$1" = '' ]; then echo "[!] For list of available parameters use: 'ifirmware_parser.sh -h'"; fi
-	
-	if [ "$1" = '-h' ] || [ "$1" = '-help' ] || [ "$1" = '--help' ]; then
+usage (){
 		echo '------------------------------'
 		echo 'iFirmware Parser'
 		echo "Description: Parse firmware keys, and download SSH RAMDISK files."
@@ -463,12 +462,12 @@ debug_info (){
 		echo '       ifirmware_parser.sh -p iphone9,3 -s 15 -o somefolder -r (Download ramdisk files for latest iOS 15)'
 		echo
 		echo '------------------------------'
-	exit
-	fi 
+		exit
+}
 
 
 		########## Switch loop ##########
-while getopts p:m:s:b:i:o:krdu option >/dev/null 2>&1
+while getopts p:m:s:b:i:o:y:z:krducgh option
 	do
 		case "${option}"
 	in
@@ -483,6 +482,7 @@ while getopts p:m:s:b:i:o:krdu option >/dev/null 2>&1
 		r) ramdisk_download="yes";;
 		d) debug_mode="yes";;
 		u) update_mode="yes";;
+		h) usage;; # call function
 	esac 
 done
 
