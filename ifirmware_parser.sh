@@ -262,16 +262,18 @@ func_download_ramdisk (){
 func_download_keys (){
 
 		if [ ! -d './misc/build_manifest' ]; then mkdir -p './misc/build_manifest'; fi
-		build_manifest='./misc/build_manifest/'"$product_name"_"$ios_version"_"$build_version"'.plist'
+		build_manifest="./misc/build_manifest/"$product_name"_"$ios_version"_"$build_version".plist"
 	if [ ! -s "$build_manifest" ]; then
 		echo '[!] Downloading: BuildManifest.plist ...'
 		"$pzb" -g 'BuildManifest.plist' "$ipsw_url" -o "$build_manifest"
 	fi
-	if [ "$platform" = 'Darwin' ] && [ -s "$build_manifest" ]; then
+	if [ "$platform" = 'Darwin' ] && [ ! -s "$build_manifest" ]; then
 		# [bug] pzb output switch in macos are broken !
 		echo '[!] PZB in Darwin cannot write output to another directory'
-		echo '[-] Moving into:' "$build_manifest"
-		mv -f './'"$product_name"_"$ios_version"_"$build_version"'.plist' './misc/build_manifest/'
+	if [ -s "./"$product_name"_"$ios_version"_"$build_version".plist" ]; then # current dir
+		echo '[-] Moving from:' "./"$product_name"_"$ios_version"_"$build_version".plist"
+		mv -f "./"$product_name"_"$ios_version"_"$build_version".plist" './misc/build_manifest/'
+	fi
 	fi
 	
 	# check again if build manifest is downloaded
