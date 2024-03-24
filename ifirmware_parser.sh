@@ -467,7 +467,7 @@ usage (){
 
 
 		########## Switch loop ##########
-while getopts p:m:s:b:i:o:y:z:krducgh option
+while getopts p:m:s:b:i:o:krduh option
 	do
 		case "${option}"
 	in
