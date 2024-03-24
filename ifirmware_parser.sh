@@ -271,7 +271,7 @@ func_download_keys (){
 		# [bug] pzb output switch in macos are broken !
 		echo '[!] PZB in Darwin cannot write output to another directory'
 		echo '[-] Moving into:' "$build_manifest"
-		mv -f './BuildManifest.plist' './misc/build_manifest/'
+		mv -f './'"$product_name"_"$ios_version"_"$build_version"'.plist' './misc/build_manifest/'
 	fi
 	
 	# check again if build manifest is downloaded
