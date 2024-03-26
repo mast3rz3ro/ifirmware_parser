@@ -201,6 +201,7 @@ fi
 		filenames="./misc/firmware_keys/"$product_name"_"$build_version".log"
 if [ ! -s "$filenames" ]; then
 		# generate map file for getting ramdisk file names
+		if [ ! -d './misc/firmware_keys' ]; then mkdir -p './misc/firmware_keys'; fi
 		echo '[-] Getting list of ramdisk files ...'
 		"$pzb" -l "$ipsw_url">"$filenames"
 fi
