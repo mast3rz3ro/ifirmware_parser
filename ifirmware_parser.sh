@@ -92,41 +92,6 @@ if [ "$firmkeys_header" != '' ] && [ "$firmkeys_header" != 'null' ]; then
 		mkdir -p 'misc/firmware_keys'
 		cp "$file_json" 'misc/firmware_keys/'"$product_name"_"$build_version"'.json'
 	fi
-		
-		echo '[-] Parsing... filenames'
-if [ -s 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' ]; then
-		firmkeys_header=$(grep -o 'iBEC' 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' | sed -n 1p)
-	if [ "$firmkeys_header" = 'iBEC' ]; then
-		files_list=$(cat 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
-	else
-		echo '[e] Files list are not valid !'
-		exit 1
-	fi
-elif [ ! -s 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' ] && [ "$keys_download" = 'yes' ]; then
-		# this was attened to handel input files
-		echo '[e] File is missing:' 'misc/firmware_keys/'"$product_name"_"$build_version"'.log'
-		echo '[!] Some RAMDISK filenames may not generated.'
-		echo '[!] Please use -k switch to fix it.'
-fi
-		ibec_file=$($jq -c 'to_entries[] | select(.key | endswith("ibec'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
-		ibss_file=$($jq -c 'to_entries[] | select(.key | endswith("ibss'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
-		iboot_file=$($jq -c 'to_entries[] | select(.key | endswith("iboot'$head_number'")) | .value.filename' $file_json | sed 's/"//g; s/\[//g; s/\]//g' | tr 'I' 'i')
-
-		# Parse kernelcache file
-		dummy_var=$(echo $files_list | tr ' ' '\n' | grep -c kernelcache) # check if there is more than one kernelcahce
-	if [ "$dummy_var" = '1' ]; then
-		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache)
-	elif [ "$dummy_var" = '2' ]; then
-		dummy_var=$(echo $product_name | tr ' ' '\n' | grep -o [1-9] | sed -n 1p) # get first digit from product name e.g iphone10,4 will return 1
-		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache*.*"$dummy_var")
-	else
-		echo '[e] Cannot parse the kernel filename !'
-		exit 1
-	fi
-		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | awk -F 'DeviceTree.' '{print $2}')
-		devicetree_file='DeviceTree.'"$devicetree_file" # Improve parsing with awk; todo #2
-		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
-		trustcache_file="$ramdisk_file"'.trustcache'
 
 		echo '[-] Parsing... decryption_keys'
 		ibec_iv=$($jq -c 'to_entries[] | select(.key | endswith("ibec")) | .value.iv' $file_json | sed 's/"//g; s/\[//g; s/\]//g')
@@ -184,83 +149,7 @@ if [ "$ios_version" != '' ] && [ "$ios_version" != 'null' ] && [ "$build_version
 		major_ios=${ios_version:0:2}
 		minor_ios=${ios_version:3:1}
 		
-else
-		echo "[e] Couldn't find any result"
-		echo '[!] Please make sure to enter a valid product name and version'
-	exit
-	fi
-
-}
-
-
-# Function 3 (Content downloader using pzb)
-func_download_ramdisk (){
-
-		echo '[!] Start downloading the ramdisk files...'
-	
-	if [ ! -s "$download_output"'/'"$ibec_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$ibec_file"
-		"$pzb" -g 'Firmware/dfu/'"$ibec_file" "$ipsw_url" -o "$download_output"'/'"$ibec_file"
-	fi
-	
-	if [ ! -s "$download_output"'/'"$ibss_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$ibss_file"
-		"$pzb" -g 'Firmware/dfu/'"$ibss_file" "$ipsw_url" -o "$download_output"'/'"$ibss_file"
-	fi
-	
-	if [ ! -s "$download_output"'/'"$iboot_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$iboot_file"
-		"$pzb" -g 'Firmware/all_flash/'"$iboot_file" "$ipsw_url" -o "$download_output"'/'"$iboot_file"
-	fi
-
-	if [ ! -s "$download_output"'/'"$devicetree_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$devicetree_file"
-		"$pzb" -g 'Firmware/all_flash/'"$devicetree_file" "$ipsw_url" -o "$download_output"'/'"$devicetree_file"
-	fi
-	
-	if [ ! -s "$download_output"'/'"$trustcache_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$trustcache_file"
-		"$pzb" -g 'Firmware/'"$trustcache_file" "$ipsw_url" -o "$download_output"'/'"$trustcache_file"
-	fi
-
-	if [ ! -s "$download_output"'/'"$kernel_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$kernel_file"
-		"$pzb" -g "$kernel_file" "$ipsw_url" -o "$download_output"'/'"$kernel_file"
-	fi
-	
-	if [ ! -s "$download_output"'/'"$ramdisk_file" ]; then
-		echo '[!] Downloading into:' "$download_output"'/'"$ramdisk_file"
-		"$pzb" -g "$ramdisk_file" "$ipsw_url" -o "$download_output"'/'"$ramdisk_file"
-	fi
-	if [ "$platform" = 'Darwin' ]; then
-		# [bug] pzb output switch is currently broken in MacOS, this is a quick solution !
-		echo '[!] PZB in Darwin cannot write output to another directory'
-		echo '[-] Moving downloaded files into:' "$download_output"
-		mv -f *.plist "$download_output"
-		mv -f *.im4p "$download_output"
-		mv -f kernelcache* "$download_output"
-		mv -f *.trustcache "$download_output"
-		mv -f *.dmg "$download_output"
-	fi
-	
-		
-		echo '[!] Checking downloaded files...'
-		if [ ! -s "$download_output"'/'"$ibec_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ibec_file"; exit; fi
-		if [ ! -s "$download_output"'/'"$ibss_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ibss_file"; exit; fi
-		if [ ! -s "$download_output"'/'"$iboot_file" ]; then echo '[!] File is missing:' "$download_output"'/'"$iboot_file"; fi # not necessary for randisk boot
-		if [ ! -s "$download_output"'/'"$devicetree_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$devicetree_file"; exit; fi
-		if [ ! -s "$download_output"'/'"$trustcache_file" ]; then echo '[!] File is missing:' "$download_output"'/'"$trustcache_file"; fi # not necessary for randisk boot
-		if [ ! -s "$download_output"'/'"$kernel_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$kernel_file"; exit; fi
-		if [ ! -s "$download_output"'/'"$ramdisk_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ramdisk_file"; exit; fi
-		
-		echo '[!] Download completed !'
-		
-}
-
-
-# Function 4 (Download firmware keys from https://theapplewiki.com)
-func_download_keys (){
-
+###############################################################################################
 		if [ ! -d './misc/build_manifest' ]; then mkdir -p './misc/build_manifest'; fi
 		build_manifest="./misc/build_manifest/"$product_name"_"$ios_version"_"$build_version".plist"
 	if [ ! -s "$build_manifest" ]; then
@@ -306,11 +195,134 @@ if [ "$multi_model" = 'yes' ] && [ -s "$build_manifest" ]; then
 		exit 1
 	fi
 fi
+###############################################################################################
+
+##############################################################################################
+		filenames="misc/firmware_keys/"$product_name"_"$build_version".log"
+if [ ! -s "$filenames" ]; then
+		# generate map file for getting ramdisk file names
+		echo '[-] Getting list of ramdisk files ...'
+		"$pzb" -l "$ipsw_url">"$filenames"
+fi
+
+if [ -s "$filenames" ]; then
+		echo '[-] Parsing... filenames'
+		hw_model=${product_model:0:3}
+		firmkeys_header=$(grep iBEC.*$hw_model "$filenames" | grep -cv '.plist')
+	if [ "$firmkeys_header" = '1' ]; then # if returned 1 means match succeed
+		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
+	elif [ "$firmkeys_header" = '2' ]; then # if returned 2 means more models to deal with
+		hw_model=${product_model:0:4}
+		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
+	else
+		printf -- "- Error unexpected model\n   Your device model is: '$product_model'\n Search pattern is: '$hw_model'\n"
+		exit 100
+	fi
+		ibec_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBEC.*$hw_model | sed -n 1p | awk -F 'iBEC.' '{$1="iBEC."; print $1$2}')
+		ibss_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBSS.*$hw_model | sed -n 1p | awk -F 'iBSS.' '{$1="iBSS."; print $1$2}')
+		iboot_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBoot.*$hw_model | sed -n 1p | awk -F 'iBoot.' '{$1="iBoot."; print $1$2}')
+
+		# Parse kernelcache file
+		dummy_var=$(echo $files_list | tr ' ' '\n' | grep -c kernelcache) # check if there is more than one kernelcahce
+	if [ "$dummy_var" = '1' ]; then
+		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache)
+	elif [ "$dummy_var" = '2' ]; then
+		dummy_var=$(echo $product_name | tr ' ' '\n' | grep -o [1-9] | sed -n 1p) # get first digit from product name e.g iphone10,4 will return 1
+		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache*.*"$dummy_var")
+	else
+		echo '[e] Cannot parse the kernel filename !'
+		exit 1
+	fi
+		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | awk -F 'DeviceTree.' '{print $2}')
+		devicetree_file='DeviceTree.'"$devicetree_file" # Improve parsing with awk; todo #2
+		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
+		trustcache_file="$ramdisk_file"'.trustcache'
+		return
+fi
+##############################################################################################
+		
+else
+		echo "[e] Couldn't find any result"
+		echo '[!] Please make sure to enter a valid product name and version'
+	exit
+	fi
+
+}
+
+
+# Function 3 (Content downloader using pzb)
+func_download_ramdisk (){
+
+		echo '[!] Start downloading the ramdisk files...'
+
+	if [ ! -s "$download_output"'/'"$ibec_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$ibec_file"
+		"$pzb" -g 'Firmware/dfu/'"$ibec_file" "$ipsw_url" -o "$download_output"'/'"$ibec_file"
+	fi
+	if [ ! -s "$download_output"'/'"$ibss_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$ibss_file"
+		"$pzb" -g 'Firmware/dfu/'"$ibss_file" "$ipsw_url" -o "$download_output"'/'"$ibss_file"
+	fi
+	
+	if [ ! -s "$download_output"'/'"$iboot_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$iboot_file"
+		"$pzb" -g 'Firmware/all_flash/'"$iboot_file" "$ipsw_url" -o "$download_output"'/'"$iboot_file"
+	fi
+
+	if [ ! -s "$download_output"'/'"$devicetree_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$devicetree_file"
+		"$pzb" -g 'Firmware/all_flash/'"$devicetree_file" "$ipsw_url" -o "$download_output"'/'"$devicetree_file"
+	fi
+	
+	if [ ! -s "$download_output"'/'"$trustcache_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$trustcache_file"
+		"$pzb" -g 'Firmware/'"$trustcache_file" "$ipsw_url" -o "$download_output"'/'"$trustcache_file"
+	fi
+
+	if [ ! -s "$download_output"'/'"$kernel_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$kernel_file"
+		"$pzb" -g "$kernel_file" "$ipsw_url" -o "$download_output"'/'"$kernel_file"
+	fi
+	
+	if [ ! -s "$download_output"'/'"$ramdisk_file" ]; then
+		echo '[!] Downloading into:' "$download_output"'/'"$ramdisk_file"
+		"$pzb" -g "$ramdisk_file" "$ipsw_url" -o "$download_output"'/'"$ramdisk_file"
+	fi
+	if [ "$platform" = 'Darwin' ]; then
+		# [bug] pzb output switch is currently broken in MacOS, this is a quick solution !
+		echo '[!] PZB in Darwin cannot write output to another directory'
+		echo '[-] Moving downloaded files into:' "$download_output"
+		if [ -s "./$ibec_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$ibss_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$iboot_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$devicetree_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$trustcache_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$kernel_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$ramdisk_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+	fi
+	
+		
+		echo '[!] Checking downloaded files...'
+		if [ ! -s "$download_output"'/'"$ibec_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ibec_file"; exit; fi
+		if [ ! -s "$download_output"'/'"$ibss_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ibss_file"; exit; fi
+		if [ ! -s "$download_output"'/'"$iboot_file" ]; then echo '[!] File is missing:' "$download_output"'/'"$iboot_file"; fi # not necessary for randisk boot
+		if [ ! -s "$download_output"'/'"$devicetree_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$devicetree_file"; exit; fi
+		if [ ! -s "$download_output"'/'"$trustcache_file" ]; then echo '[!] File is missing:' "$download_output"'/'"$trustcache_file"; fi # not necessary for randisk boot
+		if [ ! -s "$download_output"'/'"$kernel_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$kernel_file"; exit; fi
+		if [ ! -s "$download_output"'/'"$ramdisk_file" ]; then echo '[e] File is missing:' "$download_output"'/'"$ramdisk_file"; exit; fi
+		
+		echo '[!] Download completed !'
+		
+}
+
+
+# Function 4 (Download firmware keys from https://theapplewiki.com)
+func_download_keys (){
 
 	file_json='misc/firmware_keys/'"$product_name"_"$build_version"'.json'
 	if [ ! -d 'misc/firmware_keys' ]; then mkdir -p 'misc/firmware_keys'; fi
 		
-if [ -s "$file_json" ] && [ -s 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' ]; then
+if [ -s "$file_json" ]; then
 		func_firmwarekeys_parser # call function
 		return
 		
@@ -377,14 +389,6 @@ fi
 	fi
 		
 fi
-
-if [ -s 'misc/firmware_keys/'"$product_name"_"$build_version"'.json' ] && [ ! -s 'misc/firmware_keys/'"$product_name"_"$build_version"'.log' ]; then
-		# generate map file for getting ramdisk file names
-		echo '[-] Getting list of ramdisk files ...'
-		"$pzb" -l "$ipsw_url">'misc/firmware_keys/'"$product_name"_"$build_version"'.log'
-		func_firmwarekeys_parser # call function
-fi
-
 }
 
 # Function 5 print parsed info (debug)
@@ -409,12 +413,13 @@ debug_info (){
 		echo '--------------------------------------------------'
 		echo '      Type    |        Variable    | Returned value'
 		echo '--------------------------------------------------'
-		echo ' iBEC:        |'  '($ibec_file)       |' "$ibec_file" 
-		echo ' iBSS:        |'  '($ibss_file)       |' "$ibss_file" 
-		echo ' iBoot:       |'  '($iboot_file)      |' "$iboot_file"
-		echo ' Kernel:      |'  '($kernel_file)     |' "$kernel_file"
-		echo ' Devicetree:  |'  '($devicetree_file) |' "$devicetree_file"
-		echo ' RAMDISK:     |'  '($ramdisk_file)    |' "$ramdisk_file"
+		echo ' iBEC:        |'  '($ibec_file)          |' "$ibec_file" 
+		echo ' iBSS:        |'  '($ibss_file)          |' "$ibss_file" 
+		echo ' iBoot:       |'  '($iboot_file)         |' "$iboot_file"
+		echo ' Kernel:      |'  '($kernel_file)        |' "$kernel_file"
+		echo ' Devicetree:  |'  '($devicetree_file)    |' "$devicetree_file"
+		echo ' RAMDISK:     |'  '($ramdisk_file)       |' "$ramdisk_file"
+		echo ' RAMDISK:     |'  '($trustcache_file)    |' "$trustcache_file"
 		echo '--------------------------------------------------'
 		echo ' iBEC  IV+Key |' '($ibec_key)        |' "$ibec_key"
 		echo ' iBSS  IV+Key |' '($ibss_key)        |' "$ibss_key"
