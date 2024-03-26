@@ -381,6 +381,7 @@ fi
 		
 	if [ "$compare_build" = "$build_version" ]; then
 		echo '[!] File saved as:' "$file_json"
+		func_firmwarekeys_parser # call function
 	else
 		echo '[!] An error occurred file is corrupted !'
 		echo '[-] Parsed value:' "$compare_build"
