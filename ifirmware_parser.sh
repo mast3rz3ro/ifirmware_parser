@@ -198,7 +198,7 @@ fi
 ###############################################################################################
 
 ##############################################################################################
-		filenames="misc/firmware_keys/"$product_name"_"$build_version".log"
+		filenames="./misc/firmware_keys/"$product_name"_"$build_version".log"
 if [ ! -s "$filenames" ]; then
 		# generate map file for getting ramdisk file names
 		echo '[-] Getting list of ramdisk files ...'
