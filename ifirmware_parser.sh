@@ -296,12 +296,12 @@ func_download_ramdisk (){
 		echo '[!] PZB in Darwin cannot write output to another directory'
 		echo '[-] Moving downloaded files into:' "$download_output"
 		if [ -s "./$ibec_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$ibss_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$iboot_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$devicetree_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$trustcache_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$kernel_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
-		if [ -s "./$ramdisk_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
+		if [ -s "./$ibss_file" ]; then mv -f "./$ibss_file" "$download_output"; fi
+		if [ -s "./$iboot_file" ]; then mv -f "./$iboot_file" "$download_output"; fi
+		if [ -s "./$devicetree_file" ]; then mv -f "./$devicetree_file" "$download_output"; fi
+		if [ -s "./$trustcache_file" ]; then mv -f "./$trustcache_file" "$download_output"; fi
+		if [ -s "./$kernel_file" ]; then mv -f "./$kernel_file" "$download_output"; fi
+		if [ -s "./$ramdisk_file" ]; then mv -f "./$ramdisk_file" "$download_output"; fi
 	fi
 	
 		
