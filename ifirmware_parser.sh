@@ -212,7 +212,10 @@ if [ -s "$filenames" ]; then
 		echo '[-] Parsing... filenames'
 		hw_model=${product_model:0:3}
 		firmkeys_header=$(grep iBEC.*$hw_model "$filenames" | grep -cv '.plist')
-	if [ "$firmkeys_header" = '1' ]; then # if returned 1 means match succeed
+	if [ "$firmkeys_header" = '0' ]; then # if returned 0 means iboot has different name
+		hw_model=''
+		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
+	elif [ "$firmkeys_header" = '1' ]; then # if returned 1 means match succeed
 		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
 	elif [ "$firmkeys_header" = '2' ]; then # if returned 2 means more models to deal with
 		hw_model=${product_model:0:4}
