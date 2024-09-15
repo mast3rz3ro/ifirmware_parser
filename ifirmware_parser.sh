@@ -222,9 +222,12 @@ if [ -s "$filenames" ]; then
 		printf -- "- Error unexpected model\n   Your device model is: '$product_model'\n Search pattern is: '$hw_model'\n"
 		exit 100
 	fi
-		ibec_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBEC.*$hw_model | sed -n 1p | awk -F 'iBEC.' '{$1="iBEC."; print $1$2}')
-		ibss_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBSS.*$hw_model | sed -n 1p | awk -F 'iBSS.' '{$1="iBSS."; print $1$2}')
-		iboot_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBoot.*$hw_model | sed -n 1p | awk -F 'iBoot.' '{$1="iBoot."; print $1$2}')
+	if [ "$product_name" = "iPad4,4" ] || [ "$product_name" = "iPad4,5" ] || [ "$product_name" = "iPad4,6" ]; then
+		dummy_var="b" # ipad mini uses b suffix, while ipad air don't
+	fi
+		ibec_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBEC.*${hw_model}${dummy_var} | sed -n 1p | awk -F 'iBEC.' '{$1="iBEC."; print $1$2}')
+		ibss_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBSS.*${hw_model}${dummy_var} | sed -n 1p | awk -F 'iBSS.' '{$1="iBSS."; print $1$2}')
+		iboot_file=$(printf -- "$files_list" | tr ' ' '\n' | grep iBoot.*${hw_model}${dummy_var} | sed -n 1p | awk -F 'iBoot.' '{$1="iBoot."; print $1$2}')
 
 		# Parse kernelcache file
 		dummy_var=$(echo $files_list | tr ' ' '\n' | grep -c kernelcache) # check if there is more than one kernelcahce
@@ -232,13 +235,16 @@ if [ -s "$filenames" ]; then
 		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache)
 	elif [ "$dummy_var" = '2' ]; then
 		dummy_var=$(echo $product_name | tr ' ' '\n' | grep -o [1-9] | sed -n 1p) # get first digit from product name e.g iphone10,4 will return 1
-		kernel_file=$(echo $files_list | tr ' ' '\n' | grep kernelcache*.*"$dummy_var")
+		if [ "$product_name" = "iPad4,4" ] || [ "$product_name" = "iPad4,5" ] || [ "$product_name" = "iPad4,6" ]; then
+			dummy_var="b" # ipad mini uses b suffix, while ipad air don't
+		fi
+		kernel_file=$(echo $files_list | tr ' ' '\n' | grep -o kernelcache*.*"$dummy_var" | sed -n 1p)
 	else
 		echo '[e] Cannot parse the kernel filename !'
 		exit 1
 	fi
-		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | awk -F 'DeviceTree.' '{print $2}')
-		devicetree_file='DeviceTree.'"$devicetree_file" # Improve parsing with awk; todo #2
+		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | sed '/plist/d' | awk -F 'DeviceTree.' '{print $2}' | sed -n 1p)
+		devicetree_file='DeviceTree.'"$devicetree_file"
 		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
 		trustcache_file="$ramdisk_file"'.trustcache'
 		return
