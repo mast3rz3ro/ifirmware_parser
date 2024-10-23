@@ -217,6 +217,9 @@ if [ -s "$filenames" ]; then
 		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
 	elif [ "$firmkeys_header" = '2' ]; then # if returned 2 means more models to deal with
 		hw_model=${product_model:0:4}
+			if [ "${hw_model:3:1}" = "a" ]; then # prevent parsing as n66a when model is n66ap
+				hw_model=${product_model:0:3}
+			fi
 		files_list=$(cat "$filenames" | awk -F 'f ' '{print $2}' | awk -F '.plist' '{print $1}' | tr '\n\r' ' ')
 	else
 		printf -- "- Error unexpected model\n   Your device model is: '$product_model'\n Search pattern is: '$hw_model'\n"
@@ -245,7 +248,7 @@ if [ -s "$filenames" ]; then
 	fi
 		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | sed '/plist/d' | awk -F 'DeviceTree.' '{print $2}' | sed -n 1p)
 		devicetree_file='DeviceTree.'"$devicetree_file"
-		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
+		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 1p) # after sorting scheme is: update --> root --> restore
 		trustcache_file="$ramdisk_file"'.trustcache'
 		return
 fi
