@@ -205,6 +205,12 @@ if [ ! -s "$filenames" ]; then
 		echo '[-] Getting list of ramdisk files ...'
 		"$pzb" -l "$ipsw_url" > "$filenames"
 fi
+if [ "$(grep -Fc 'Error init failed' "$filenames")" != "0" ]; then
+		echo "Error: connection was lost during filenames generate."
+		echo "Please try again."
+		printf "">"$filenames" # remove file without using rm
+		exit 1
+fi
 
 if [ -s "$filenames" ]; then
 		echo '[-] Parsing... filenames'
