@@ -156,9 +156,9 @@ if [ "$ios_version" != '' ] && [ "$ios_version" != 'null' ] && [ "$build_version
 		echo '[!] Downloading: BuildManifest.plist ...'
 		"$pzb" -g 'BuildManifest.plist' "$ipsw_url" -o "$build_manifest"
 	fi
-	if [ "$platform" = 'Darwin' ] && [ ! -s "$build_manifest" ]; then
+	if [ ! -s "$build_manifest" ]; then
 		# [bug] pzb output switch in macos are broken !
-		echo '[!] PZB in Darwin cannot write output to another directory'
+		echo '[!] PZB in macOS/Linux cannot write output to another directory'
 	if [ -s "./"$product_name"_"$ios_version"_"$build_version".plist" ]; then # current dir
 		echo '[-] Moving from:' "./"$product_name"_"$ios_version"_"$build_version".plist"
 		mv -f "./"$product_name"_"$ios_version"_"$build_version".plist" './misc/build_manifest/'
@@ -254,7 +254,8 @@ if [ -s "$filenames" ]; then
 	fi
 		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | sed '/plist/d' | awk -F 'DeviceTree.' '{print $2}' | sed -n 1p)
 		devicetree_file='DeviceTree.'"$devicetree_file"
-		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 1p) # after sorting scheme is: update --> root --> restore
+		#ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 1p) # after sorting scheme is: update --> root --> restore
+		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
 		trustcache_file="$ramdisk_file"'.trustcache'
 		return
 fi
@@ -272,6 +273,9 @@ else
 # Function 3 (Content downloader using pzb)
 func_download_ramdisk (){
 
+		# override output for better orgnaise
+		download_output="$download_output/${product_name}_${product_model}_${build_version}"
+		mkdir -p "$download_output"
 		echo '[!] Start downloading the ramdisk files...'
 
 	if [ ! -s "$download_output"'/'"$ibec_file" ]; then
@@ -307,9 +311,9 @@ func_download_ramdisk (){
 		echo '[!] Downloading into:' "$download_output"'/'"$ramdisk_file"
 		"$pzb" -g "$ramdisk_file" "$ipsw_url" -o "$download_output"'/'"$ramdisk_file"
 	fi
-	if [ "$platform" = 'Darwin' ]; then
+
 		# [bug] pzb output switch is currently broken in MacOS, this is a quick solution !
-		echo '[!] PZB in Darwin cannot write output to another directory'
+		echo '[!] PZB in macOS/Linux cannot write output to another directory'
 		echo '[-] Moving downloaded files into:' "$download_output"
 		if [ -s "./$ibec_file" ]; then mv -f "./$ibec_file" "$download_output"; fi
 		if [ -s "./$ibss_file" ]; then mv -f "./$ibss_file" "$download_output"; fi
@@ -318,7 +322,6 @@ func_download_ramdisk (){
 		if [ -s "./$trustcache_file" ]; then mv -f "./$trustcache_file" "$download_output"; fi
 		if [ -s "./$kernel_file" ]; then mv -f "./$kernel_file" "$download_output"; fi
 		if [ -s "./$ramdisk_file" ]; then mv -f "./$ramdisk_file" "$download_output"; fi
-	fi
 	
 		
 		echo '[!] Checking downloaded files...'
