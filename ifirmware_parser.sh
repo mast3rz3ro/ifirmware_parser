@@ -255,7 +255,10 @@ if [ -s "$filenames" ]; then
 		devicetree_file=$(echo $files_list | tr ' ' '\n' | grep DeviceTree."$product_model" | sed '/plist/d' | awk -F 'DeviceTree.' '{print $2}' | sed -n 1p)
 		devicetree_file='DeviceTree.'"$devicetree_file"
 		#ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 1p) # after sorting scheme is: update --> root --> restore
-		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-)
+		#ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 2p) # the update ramdisk should be always the second :-
+	if [ "$(echo $files_list | tr ' ' '\n' | grep .dmg$ | wc -l)" = "5" ]; then
+		ramdisk_file=$(echo $files_list | tr ' ' '\n' | grep .dmg$ | sed -n 3p)
+	fi
 		trustcache_file="$ramdisk_file"'.trustcache'
 		return
 fi
